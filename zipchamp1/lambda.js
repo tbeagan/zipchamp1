@@ -13,9 +13,9 @@ exports.handler = function (event, context, callback) {
     {
         "path": "tyler-test123",
         "changes": {
-            "tyler-test123": "content for file 1",
-            "tyler-test-1234/new": "new content of file 2",
-            "tyler-test-1234/delete": null
+            "tyler-test123/new": "content for file 1",
+            "tyler-test-1234": "new content of file 2",
+            "tyler-test-1234": null
         }
     }
 
