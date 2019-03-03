@@ -1,0 +1,97 @@
+{
+  "EDITOR_STATE": {
+    "allProjectFiles": {
+      "7f52bd13-6774-4907-ad0f-564c01a8fd87": {
+        "id": "7f52bd13-6774-4907-ad0f-564c01a8fd87",
+        "parent": null,
+        "name": "zipchamp1",
+        "type": "DIRECTORY",
+        "isDirectory": true,
+        "children": [
+          "4f6fa79f-96c7-4c96-9784-34104c0f9e05"
+        ],
+        "isRemovable": false,
+        "filePath": "zipchamp1"
+      },
+      "4f6fa79f-96c7-4c96-9784-34104c0f9e05": {
+        "id": "4f6fa79f-96c7-4c96-9784-34104c0f9e05",
+        "parent": "7f52bd13-6774-4907-ad0f-564c01a8fd87",
+        "name": "lambda.js",
+        "type": "LAMBDA_FILE",
+        "isDirectory": false,
+        "children": [],
+        "isRemovable": true,
+        "filePath": "zipchamp1/lambda.js",
+        "code": "exports.handler = function (event, context, callback) {\n\n    callback(null, { \"message\": \"Successfully executed\" });\n}\nlet AWS = require('aws-sdk');\nlet JSZip = require(\"jszip\");\nlet fs = require(\"fs\");\n\nconst s3 = new AWS.S3();\n\nexports.handler = function (event, context, callback) {\n    /* The request payload will take the following format:\n    {\n        \"path\": \"path/to/zip/file/within/bucket\",\n        \"changes\": {\n            \"path/to/new/file/1\": \"content for file 1\",\n            \"path/to/existing/file/2\": \"new content of file 2\",\n            \"path/to/deleted/file/3\": null\n        }\n    }\n     */\n\n    let changes = event.changes;\n    let modified = 0, removed = 0;\n\n    console.log(`Fetching ${event.path}`);\n    s3.getObject({\n        'Bucket': \"tyler-test123\",\n        'Key': event.path\n    }).promise()\n        .then(data => {\n            let jszip = new JSZip();\n            console.log(`Opening ${event.path}`);\n            jszip.loadAsync(data.Body).then(zip => {\n                console.log(`Opened ${event.path} as zip`);\n                Object.keys(changes).forEach(name => {\n                    if (changes[name] !== null) {\n                        console.log(`Modify ${name}`);\n                        zip.file(name, changes[name]);\n                        modified++;\n                    } else {\n                        console.log(`Remove ${name}`);\n                        zip.remove(name);\n                        removed++;\n                    }\n                });\n\n                let tmpPath = `/tmp/${event.path}`\n                console.log(`Writing to temp file ${tmpPath}`);\n                zip.generateNodeStream({ streamFiles: true })\n                    .pipe(fs.createWriteStream(tmpPath))\n                    .on('error', err => callback(err))\n                    .on('finish', function () {\n                        console.log(`Uploading to ${event.path}`);\n                        s3.putObject({\n                            \"Body\": fs.createReadStream(tmpPath),\n                            \"Bucket\": \"tyler-test-1234\",\n                            \"Key\": event.path,\n                            \"Metadata\": {\n                                \"Content-Length\": String(fs.statSync(tmpPath).size)\n                            }\n                        })\n                            .promise()\n                            .then(data => {\n                                console.log(`Successfully uploaded ${event.path}`);\n                                callback(null, {\n                                    modified: modified,\n                                    removed: removed\n                                });\n                            })\n                            .catch(err => {\n                                callback(err);\n                            });\n                    });\n            })\n                .catch(err => {\n                    callback(err);\n                });\n        })\n        .catch(err => {\n            callback(err);\n        });\n}",
+        "triggers": [],
+        "config": {
+          "runtime": "nodejs8.10",
+          "timeout": 60,
+          "memory": 128
+        }
+      }
+    },
+    "deletedFiles": [],
+    "rootNode": "7f52bd13-6774-4907-ad0f-564c01a8fd87",
+    "openFiles": [
+      "4f6fa79f-96c7-4c96-9784-34104c0f9e05"
+    ],
+    "currentFileId": "4f6fa79f-96c7-4c96-9784-34104c0f9e05",
+    "resources": {
+      "s3tylerTest123": {
+        "name": "s3tylerTest123",
+        "type": "S3",
+        "config": {
+          "mode": 1,
+          "bucket": {
+            "region": "us-east-1",
+            "name": "tyler-test123"
+          }
+        },
+        "globallyEditable": false
+      },
+      "s3tylerTest1234": {
+        "name": "s3tylerTest1234",
+        "type": "S3",
+        "config": {
+          "mode": 1,
+          "bucket": {
+            "region": "us-east-1",
+            "name": "tyler-test-1234"
+          }
+        },
+        "globallyEditable": false
+      }
+    },
+    "envVariables": [
+      {
+        "lambdaId": "all",
+        "varKey": "SIGMA_AWS_ACC_ID",
+        "varValue": null,
+        "shouldPersist": false,
+        "displayOnly": false,
+        "editable": false
+      }
+    ],
+    "packageJSON": {
+      "dependencies": {}
+    },
+    "lambdaId": "4f6fa79f-96c7-4c96-9784-34104c0f9e05"
+  },
+  "PROJECT_META": {
+    "projectName": "zipchamp1",
+    "projectDescription": "Modifies zip in S3",
+    "projectVersion": "1.0.0",
+    "projectRegion": "us-east-1",
+    "platform": "AWS",
+    "platformRegions": {},
+    "lastSave": 1551579199287
+  },
+  "VCS_STATE": {
+    "provider": "GitHub",
+    "repo": {
+      "name": "zipchamp1",
+      "url": "https://github.com/tbeagan/zipchamp1"
+    }
+  }
+}
