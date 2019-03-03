@@ -1,5 +1,7 @@
 {
   "name": "zipchamp1",
   "version": "1.0.0",
-  "dependencies": {}
+  "dependencies": {
+    "jszip": "3.2.0"
+  }
 }

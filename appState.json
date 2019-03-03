@@ -98,7 +98,12 @@
       }
     ],
     "packageJSON": {
-      "dependencies": {}
+      "dependencies": {
+        "jszip": {
+          "name": "jszip",
+          "version": "3.2.0"
+        }
+      }
     },
     "lambdaId": "4f6fa79f-96c7-4c96-9784-34104c0f9e05"
   },
@@ -109,7 +114,7 @@
     "projectRegion": "us-east-1",
     "platform": "AWS",
     "platformRegions": {},
-    "lastSave": 1551579959196
+    "lastSave": 1551580831226
   },
   "VCS_STATE": {
     "provider": "GitHub",
