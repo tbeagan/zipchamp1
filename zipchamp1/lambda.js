@@ -11,9 +11,9 @@ const s3 = new AWS.S3();
 exports.handler = function (event, context, callback) {
 
     {
-        "path": "tyler-test123",
+        "path": "/",
         "changes": {
-            "tyler-test123/new": "content for file 1",
+            "/": "content for file 1",
             "tyler-test-1234": "new content of file 2",
             "tyler-test-1234": null
         }
